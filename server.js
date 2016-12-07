@@ -35,10 +35,10 @@ function handleQueryInput(f, d) {
 }
 
 function setSchedule(f, d, start, end) {
-  console.log(`job scheduled at ${d.hour}:${d.minute} for \n${f}`);
+  console.log(`job scheduled at ${d.hour}:${d.minute} for ${f}`);
   var rule = new schedule.RecurrenceRule();
-  rule.hour = d.hour;
-  rule.minute = d.minute;
+  rule.hour = d.hour - 1;
+  rule.minute = d.minute - 1;
   rule.dayOfWeek = new schedule.Range(1, 5);
 
   let j = schedule.scheduleJob(rule, function() {
