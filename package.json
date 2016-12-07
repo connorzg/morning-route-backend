@@ -1,0 +1,21 @@
+{
+  "name": "fcm-app-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "dotenv": "^2.0.0",
+    "node-fetch": "^1.6.3",
+    "node-schedule": "^1.2.0",
+    "node-xcs": "^0.1.5"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
+  },
+  "scripts": {
+    "test": "mocha",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
