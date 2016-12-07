@@ -2,11 +2,12 @@ var Sender = require('node-xcs').Sender;
 var Message = require('node-xcs').Message;
 var Notification = require('node-xcs').Notification;
 var Result = require('node-xcs').Result;
+require('newrelic');
 require('dotenv').config({silent: true});
 var schedule = require('node-schedule');
 var fetch = require('node-fetch');
 
-var http = require('http'); 
+var http = require('http');
 http.createServer(function (req, res) {
   res.writeHead(200, {'Content-Type': 'text/plain'}); res.send('it is running\n');
 }).listen(process.env.PORT || 5000);
@@ -27,11 +28,12 @@ function handleQueryInput(f, d) {
   locations.forEach(function(location) {
     location = location.replace(/\s+/g, '+');
   });
-  console.log(`query input for ${f} handled`);
+  console.log(`query input handled`);
   setSchedule(f, d, locations[0], locations[1]);
 }
 
 function setSchedule(f, d, start, end) {
+  console.log('job scheduled');
   var rule = new schedule.RecurrenceRule();
   rule.hour = d.hour;
   rule.minute = d.minute;
