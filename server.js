@@ -36,12 +36,15 @@ function handleQueryInput(f, d) {
 
 function setSchedule(f, d, start, end) {
   console.log(`job scheduled at ${d.hour}:${d.minute} for ${f}`);
-  var rule = new schedule.RecurrenceRule();
-  rule.hour = d.hour - 1;
-  rule.minute = d.minute - 1;
-  rule.dayOfWeek = new schedule.Range(1, 5);
+  
+  for (var i = 0; i < jobs.length; i++) {
+    if (jobs[i].name == f) {
+      jobs[i].cancel();
+      console.log(`previous job for ${jobs[i].name} canceled`);
+    }
+  }
 
-  let j = schedule.scheduleJob(rule, function() {
+  let j = schedule.scheduleJob(f, `${d.minute} ${d.hour} * * 0-5`, function() {
     console.log(`job for ${f} started`);
     getRoute(f, start, end);
   });
@@ -58,7 +61,7 @@ function getRoute(f, start, end) {
       let summary = result.routes[0].summary;
       let driveTime = result.routes[0].legs[0].duration_in_traffic.text;
       console.log(summary, driveTime);
-      setNotification(f, summary, driveTime)
+      setNotification(f, summary, driveTime);
   }).catch(function(error) {
     console.log(error);
   });
