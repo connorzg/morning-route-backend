@@ -14,6 +14,8 @@ http.createServer(function (req, res) {
 
 var xcs = new Sender(process.env.SENDER_ID, process.env.SERVER_KEY);
 
+var jobs = [];
+
 xcs.on('message', function(messageId, from, data, category) {
   console.log('received message', messageId, from, data, category);
   handleQueryInput(from, data);
@@ -33,14 +35,20 @@ function handleQueryInput(f, d) {
 }
 
 function setSchedule(f, d, start, end) {
-  console.log('job scheduled');
+  console.log(`job scheduled for ${f}`);
+  console.log(schedule.scheduledJobs);
   var rule = new schedule.RecurrenceRule();
   rule.hour = d.hour;
   rule.minute = d.minute;
-  let s = schedule.scheduleJob(rule, function() {
+  rule.dayOfWeek = new schedule.Range(1, 5);
+
+  let j = schedule.scheduleJob(rule, function() {
     console.log(`job for ${f} started`);
     getRoute(f, start, end);
   });
+
+  jobs.push(j);
+  console.log("Total Jobs:", jobs.length);
 }
 
 function getRoute(f, start, end) {
@@ -48,9 +56,9 @@ function getRoute(f, start, end) {
   fetch(query)
     .then((response) => response.json())
     .then((result) => {
-      console.log(result);
       let summary = result.routes[0].summary;
       let driveTime = result.routes[0].legs[0].duration_in_traffic.text;
+      console.log(summary, driveTime);
       setNotification(f, summary, driveTime)
   }).catch(function(error) {
     console.log(error);
@@ -67,7 +75,6 @@ function setNotification(f, summary, driveTime) {
   var message = new Message("messageId_1046")
       .priority("high")
       .dryRun(false)
-      // .addData("node-xcs", true)
       .deliveryReceiptRequested(true)
       .notification(notification)
       .build();
