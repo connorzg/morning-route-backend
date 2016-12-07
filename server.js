@@ -2,9 +2,14 @@ var Sender = require('node-xcs').Sender;
 var Message = require('node-xcs').Message;
 var Notification = require('node-xcs').Notification;
 var Result = require('node-xcs').Result;
-require('dotenv').config();
+require('dotenv').config({silent: true});
 var schedule = require('node-schedule');
 var fetch = require('node-fetch');
+
+var http = require('http'); 
+http.createServer(function (req, res) {
+  res.writeHead(200, {'Content-Type': 'text/plain'}); res.send('it is running\n');
+}).listen(process.env.PORT || 5000);
 
 var xcs = new Sender(process.env.SENDER_ID, process.env.SERVER_KEY);
 
