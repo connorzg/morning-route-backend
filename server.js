@@ -40,23 +40,20 @@ function handleQueryInput(f, d) {
   locations.forEach(function(location) {
     location = location.replace(/\s+/g, '+');
   });
-  console.log(`query input handled`);
   setSchedule(f, d, locations[0], locations[1]);
 }
 
 function setSchedule(f, d, start, end) {
-  console.log(`job scheduled at ${d.hour}:${d.minute} for ${f}`);
+  console.log(`job scheduled at ${d.hour}:${d.minute}`);
 
   for (var i = 0; i < jobs.length; i++) {
     if (jobs[i].name == f) {
       jobs[i].cancel();
-      console.log(`previous job for ${jobs[i].name} removed`);
       jobs.splice(i, 1);
     }
   }
 
   let j = schedule.scheduleJob(f, `${d.minute} ${d.hour} * * 0-5`, function() {
-    console.log(`job for ${f} started`);
     getRoute(f, start, end);
   });
 
@@ -79,10 +76,9 @@ function getRoute(f, start, end) {
 }
 
 function setNotification(f, summary, driveTime) {
-  console.log('notification set');
   var notification = new Notification("Morning Route")
-      .title(summary)
-      .body(driveTime)
+      .title(`Take ${summary} today`)
+      .body(`Your commute will take ${driveTime}`)
       .build();
 
   var message = new Message("messageId_1046")
