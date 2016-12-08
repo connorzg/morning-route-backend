@@ -8,9 +8,17 @@ var schedule = require('node-schedule');
 var fetch = require('node-fetch');
 
 var http = require('http');
-http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-}).listen(process.env.PORT || 5000);
+var ecstatic = require('ecstatic')(__dirname + '/static');
+var router = require('routes')();
+router.addRoute('/hello/:name', function (req, res, params) {
+  res.end('Hello there, ' + params.name + '\n');
+});
+var server = http.createServer(function (req, res) {
+  var m = router.match(req.url);
+  if (m) m.fn(req, res, m.params);
+  else ecstatic(req, res)
+});
+server.listen(8000);
 
 var xcs = new Sender(process.env.SENDER_ID, process.env.SERVER_KEY);
 
