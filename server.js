@@ -1,3 +1,5 @@
+"use strict"
+
 var Sender = require('node-xcs').Sender;
 var Message = require('node-xcs').Message;
 var Notification = require('node-xcs').Notification;
