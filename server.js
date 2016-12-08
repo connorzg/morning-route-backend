@@ -18,7 +18,7 @@ var server = http.createServer(function (req, res) {
   if (m) m.fn(req, res, m.params);
   else ecstatic(req, res)
 });
-server.listen(5000);
+server.listen(process.env.PORT || 5000);
 
 var xcs = new Sender(process.env.SENDER_ID, process.env.SERVER_KEY);
 
