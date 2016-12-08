@@ -36,11 +36,12 @@ function handleQueryInput(f, d) {
 
 function setSchedule(f, d, start, end) {
   console.log(`job scheduled at ${d.hour}:${d.minute} for ${f}`);
-  
+
   for (var i = 0; i < jobs.length; i++) {
     if (jobs[i].name == f) {
       jobs[i].cancel();
-      console.log(`previous job for ${jobs[i].name} canceled`);
+      jobs.splice(i, 1);
+      console.log(`previous job for ${jobs[i].name} removed`);
     }
   }
 
