@@ -48,8 +48,8 @@ function setSchedule(f, d, start, end) {
   for (var i = 0; i < jobs.length; i++) {
     if (jobs[i].name == f) {
       jobs[i].cancel();
-      jobs.splice(i, 1);
       console.log(`previous job for ${jobs[i].name} removed`);
+      jobs.splice(i, 1);
     }
   }
 
