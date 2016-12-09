@@ -11,12 +11,14 @@ var http = require('http');
 var ecstatic = require('ecstatic')(__dirname + '/static');
 var router = require('routes')();
 
-// Server required for heroku port binding, though XMPP is self-sufficient
+
 // Serve simple static html file when visiting this backend
+// Nescessary for server pinging to prevent idle
 router.addRoute('/hello/:name', function (req, res, params) {
   res.end('Hello there, ' + params.name + '\n');
 });
 
+// HTTP server required for heroku port binding, though XMPP is self-sufficient
 var server = http.createServer(function (req, res) {
   var m = router.match(req.url);
   if (m) m.fn(req, res, m.params);
@@ -50,12 +52,12 @@ function handleQueryInput(f, d) {
   setSchedule(f, d, locations[0], locations[1]);
 }
 
-// Schedules a node-cron job
+// Schedule a node-cron job
 function setSchedule(f, d, start, end) {
   console.log(`job scheduled at ${d.hour}:${d.minute}`);
 
-  // Remove and cancel previous job for a user/phone
-  // Currently only one is job per phone is allowed
+  // Cancel then remove previous job for a user/phone
+  // Currently only one is job per phone allowed
   for (var i = 0; i < jobs.length; i++) {
     if (jobs[i].name == f) {
       jobs[i].cancel();
@@ -67,11 +69,12 @@ function setSchedule(f, d, start, end) {
     getRoute(f, start, end);
   });
 
-  // Monitor current number of jobs/users
+  // Monitor current number of active users/jobs
   jobs.push(j);
   console.log("Total Jobs:", jobs.length);
 }
 
+// WHEN JOB OCCURS:
 // Call Google Maps API with user locations and return route overview
 function getRoute(f, start, end) {
   let query = `https://maps.googleapis.com/maps/api/directions/json?origin=${start}&destination=${end}&region=us&departure_time=now&traffic_model&key=AIzaSyB3xsLMFn2XoZfmywOnsWn8tf0Ffvw7FF0`
@@ -87,7 +90,7 @@ function getRoute(f, start, end) {
   });
 }
 
-// API callback, prepares notification for sending
+// API callback, create notification for sending
 function setNotification(f, summary, driveTime) {
   var notification = new Notification("Morning Route")
       .title(`Take ${summary} today`)
@@ -104,6 +107,7 @@ function setNotification(f, summary, driveTime) {
   sendNotification(f, message, notification)
 }
 
+// Sends created notification back to user
 function sendNotification(f, message, notification) {
   xcs.sendNoRetry(message, f, function (result) {
       if (result.getError()) {
