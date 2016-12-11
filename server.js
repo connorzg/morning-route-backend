@@ -1,15 +1,21 @@
 "use strict"
-var Sender = require('node-xcs').Sender;
-var Message = require('node-xcs').Message;
-var Notification = require('node-xcs').Notification;
-var Result = require('node-xcs').Result;
+const Sender = require('node-xcs').Sender;
+const Message = require('node-xcs').Message;
+const Notification = require('node-xcs').Notification;
+const Result = require('node-xcs').Result;
 require('newrelic');
 require('dotenv').config({silent: true});
-var schedule = require('node-schedule');
-var fetch = require('node-fetch');
-var http = require('http');
-var ecstatic = require('ecstatic')(__dirname + '/static');
-var router = require('routes')();
+const schedule = require('node-schedule');
+const fetch = require('node-fetch');
+const http = require('http');
+const ecstatic = require('ecstatic')(__dirname + '/static');
+const router = require('routes')();
+
+// TODO
+// Get user location and append city name if ommited, also could check summary.indexOf('hours') > -1 and rerun getRoute + city name
+// Schedule days of the week
+// Change the name of message for multiple routes
+// *DONE Error messages
 
 
 // Serve simple static html file when visiting this backend
@@ -19,18 +25,18 @@ router.addRoute('/hello/:name', function (req, res, params) {
 });
 
 // HTTP server required for heroku port binding, though XMPP is self-sufficient
-var server = http.createServer(function (req, res) {
-  var m = router.match(req.url);
+const server = http.createServer(function (req, res) {
+  let m = router.match(req.url);
   if (m) m.fn(req, res, m.params);
   else ecstatic(req, res)
 });
 server.listen(process.env.PORT || 5000);
 
 // XMPP server configuration
-var xcs = new Sender(process.env.SENDER_ID, process.env.SERVER_KEY);
+const xcs = new Sender(process.env.SENDER_ID, process.env.SERVER_KEY);
 
 // Current cron jobs
-var jobs = [];
+let jobs = [];
 
 // Pass data when message received from phone
 xcs.on('message', function(messageId, from, data, category) {
@@ -58,7 +64,7 @@ function setSchedule(f, d, start, end) {
 
   // Cancel then remove previous job for a user/phone
   // Currently only one is job per phone allowed
-  for (var i = 0; i < jobs.length; i++) {
+  for (let i = 0; i < jobs.length; i++) {
     if (jobs[i].name == f) {
       jobs[i].cancel();
       jobs.splice(i, 1);
@@ -84,7 +90,15 @@ function getRoute(f, start, end) {
       let summary = result.routes[0].summary;
       let driveTime = result.routes[0].legs[0].duration_in_traffic.text;
       console.log(summary, driveTime);
-      setNotification(f, summary, driveTime);
+
+      // If drive is hours long rerun getroute + city name
+      if (summary.indexOf('hours') > -1) {
+        // Only austin right now, implement user location
+        getRoute(f, `${start},+Austin`, end);
+      } else {
+        setNotification(f, summary, driveTime);
+      }
+
   }).catch(function(error) {
     console.log(error);
   });
@@ -92,12 +106,13 @@ function getRoute(f, start, end) {
 
 // API callback, create notification for sending
 function setNotification(f, summary, driveTime) {
-  var notification = new Notification("Morning Route")
+  let notification = new Notification("Morning Route")
       .title(`Take ${summary} today`)
       .body(`Your commute will take ${driveTime}`)
       .build();
 
-  var message = new Message("messageId_1046")
+// Attempting to implement multiple routes for user
+  let message = new Message(`Morning Commute ${f}`)
       .priority("high")
       .dryRun(false)
       .deliveryReceiptRequested(true)
