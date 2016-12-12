@@ -1,12 +1,10 @@
 "use strict";
-"use nodent";
 const Sender = require('node-xcs').Sender;
 const Message = require('node-xcs').Message;
 const Notification = require('node-xcs').Notification;
 const Result = require('node-xcs').Result;
 require('newrelic');
 require('dotenv').config({silent: true});
-require('nodent')() ;
 const schedule = require('node-schedule');
 const fetch = require('node-fetch');
 const http = require('http');
