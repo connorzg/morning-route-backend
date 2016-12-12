@@ -1,10 +1,12 @@
-"use strict"
+"use strict";
+"use nodent";
 const Sender = require('node-xcs').Sender;
 const Message = require('node-xcs').Message;
 const Notification = require('node-xcs').Notification;
 const Result = require('node-xcs').Result;
 require('newrelic');
 require('dotenv').config({silent: true});
+require('nodent')() ;
 const schedule = require('node-schedule');
 const fetch = require('node-fetch');
 const http = require('http');
@@ -15,13 +17,18 @@ const router = require('routes')();
 // Get user location and append city name if ommited, also could check summary.indexOf('hours') > -1 and rerun getRoute + city name
 // Schedule days of the week
 // Change the name of message for multiple routes
-// *DONE Error messages
-
 
 // Serve simple static html file when visiting this backend
 // Nescessary for server pinging to prevent idle
 router.addRoute('/hello/:name', function (req, res, params) {
   res.end('Hello there, ' + params.name + '\n');
+});
+
+router.addRoute('/route/:start/:end', function (req, res, params) {
+  let f = null;
+  getRoute(f, params.start, params.end).then((both) => {
+    res.end(both);
+  });
 });
 
 // HTTP server required for heroku port binding, though XMPP is self-sufficient
@@ -71,7 +78,7 @@ function setSchedule(f, d, start, end) {
     }
   }
 
-  let j = schedule.scheduleJob(f, `${d.minute} ${d.hour} * * 0-5`, function() {
+  let j = schedule.scheduleJob(f, `${d.minute} ${d.hour} * * *`, function() {
     getRoute(f, start, end);
   });
 
@@ -84,7 +91,7 @@ function setSchedule(f, d, start, end) {
 // Call Google Maps API with user locations and return route overview
 function getRoute(f, start, end) {
   let query = `https://maps.googleapis.com/maps/api/directions/json?origin=${start}&destination=${end}&region=us&departure_time=now&traffic_model&key=AIzaSyB3xsLMFn2XoZfmywOnsWn8tf0Ffvw7FF0`
-  fetch(query)
+  return fetch(query)
     .then((response) => response.json())
     .then((result) => {
       let summary = result.routes[0].summary;
@@ -95,13 +102,14 @@ function getRoute(f, start, end) {
       if (summary.indexOf('hours') > -1) {
         // Only austin right now, implement user location
         getRoute(f, `${start},+Austin`, end);
-      } else {
+      } else if (f) {
+        // check if user is scheduling or calling current route overview
         setNotification(f, summary, driveTime);
+      } else {
+        let both = `${summary} ${driveTime}`;
+        return both;
       }
-
-  }).catch(function(error) {
-    console.log(error);
-  });
+  })
 }
 
 // API callback, create notification for sending
